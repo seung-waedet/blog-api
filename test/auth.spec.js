@@ -15,6 +15,10 @@ describe('authenticate a user', () => {
         await conn.cleanup()
     })
 
+    afterAll(async () => {
+        await conn.disconnect()
+    })
+
     it('should signup a user - POST request /api/signup', async () => {
         const response = await request(app).post('/api/signup')
         .set('content-type', 'application/json')
@@ -22,28 +26,28 @@ describe('authenticate a user', () => {
         
         expect(response.status).toBe(201)
         expect(response.body).toHaveProperty('message')
-        expect(response.body).toHaveProperty('first_name')
-        expect(response.body).toHaveProperty('last_name')
-        expect(response.body).toHaveProperty('email')
+        expect(response.body).toHaveProperty('status')
+        expect(response.body).toHaveProperty('user')
+        expect(response.body.status).toBe(true)
         expect(response.body.message).toBe('Signup successful')
-        expect(response.body.first_name).toBe(users[0].first_name)
-        expect(response.body.last_name).toBe(users[0].last_name)
-        expect(response.body.email).toBe(users[0].email)
+        expect(response.body.user.first_name).toBe(users[0].first_name)
+        expect(response.body.user.last_name).toBe(users[0].last_name)
+        expect(response.body.user.email).toBe(users[0].email)
     })
 
     it('should test if a user provides incorrect details during signup - POST request /api/signup', async () => {
         const response = await request(app).post('/api/signup')
         .set('content-type', 'application/json')
-        .send(users[0])
+        .send(users[2])
         
         expect(response.status).toBe(400)
-        expect(response.body).toHaveProperty('message')
-        expect(response.body.message).toBe('Please provide the right fields')
+        expect(response.body).toHaveProperty('error')
+        expect(response.body.error).toBe("User validation failed: last_name: last_name field is required")
     })
 
     it('should login a user - POST request /api/login', async () => {
         //Add a user to db
-        const user = userModel.create(users[1])
+        const user = await userModel.create(users[1])
 
         const response = await request(app).post('/api/login')
         .set('content-type', 'application/json')
@@ -58,16 +62,16 @@ describe('authenticate a user', () => {
 
     it('should test if the user doesnt provide the necessary info during login - POST request /api/login', async () => {
         //Add a user to db
-        const user = userModel.create(users[1])
+        const user = await userModel.create(users[1])
 
         const response = await request(app).post('/api/login')
         .set('content-type', 'application/json')
         .send({email: users[1].email})
 
         expect(response.status).toBe(403)
-        expect(response.body).toHaveProperty('message')
+        expect(response.body).toHaveProperty('error')
+        expect(response.body.error).toBe('Missing credentials')
         expect(response.body).not.toHaveProperty('token')
-        expect(response.body.message).toBe('Login Unsuccessful')
         
     })
 
