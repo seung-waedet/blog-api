@@ -67,19 +67,19 @@ describe('authenticate a user', () => {
         expect(response.body).toHaveProperty("status")
         expect(response.body).toHaveProperty("articles")
         expect(response.body.status).toBe(true)
-        console.log(response.body)
     })
 
-    // it('logged in users should be able to see all their published articles - GET request /api/blog/published', async () => {
-    //     const response = await request(app).get(`/api/blog/published`)
-    //     .set('content-type', 'application/json')
-    //     .set('Authorization', `Bearer ${token}`)
+    it('logged in users should be able to see all their published articles - GET request /api/blog/published', async () => {
+        const response = await request(app).get(`/api/blog/published`)
+        .set('content-type', 'application/json')
+        .set('Authorization', `Bearer ${token}`)
         
-    //     expect(response.status).toBe(200)
-    //     expect(response.body).toHaveProperty("status")
-    //     expect(response.body).toHaveProperty("articles")
-    //     expect(response.body.status).toBe(true)
-    // })
+        expect(response.status).toBe(200)
+        expect(response.body).toHaveProperty("status")
+        expect(response.body).toHaveProperty("articles")
+        expect(response.body.status).toBe(true)
+        expect(response.body.articles).toEqual([])
+    })
 
 
     // it('logged in users should be able to update draft to publish - PATCH request /api/blog/publish/id', async () => {
