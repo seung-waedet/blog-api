@@ -1,9 +1,9 @@
 [
     {
-        "title": "",
-        "description": "",
-        "tags": [],
-        "body": ""
+        "title": "Understanding CSS Positioning",
+        "description": "Simple explanation of CSS positioning",
+        "tags": ["#css", "newbies"],
+        "body": "Positioning can seem daunting at first for everyone new to css. In this article I'll explain ....."
     },
 
     {

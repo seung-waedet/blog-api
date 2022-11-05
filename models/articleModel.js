@@ -7,6 +7,13 @@ const articleSchema = new Schema({
         required: true,
         unique: true
     },
+    author: {
+        type: String
+    },
+    formattedTitle: {
+        type: String,
+        unique: true
+    },
     description: {
         type: String
     },
@@ -21,7 +28,7 @@ const articleSchema = new Schema({
     },
     read_count: {
         type: Number,
-        default: 1
+        default: 0
     },
     reading_time: {
         type: String
@@ -30,10 +37,6 @@ const articleSchema = new Schema({
         type: String,
         required: true
     },
-    author: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: User
-    },
     created_at: {
         type: Date,
         default: Date
@@ -41,6 +44,16 @@ const articleSchema = new Schema({
     updated_at: {
         type: Date,
         default: Date
+    },
+    authorId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+    }
+})
+
+articleSchema.set('toJSON', {
+    transform: (document, returnedObject) => {
+        delete returnedObject.__v
     }
 })
 
