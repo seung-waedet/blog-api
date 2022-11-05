@@ -22,9 +22,9 @@ describe('authenticate a user', () => {
         token = response.body.token
     })
 
-    afterEach(async () => {
-        await conn.cleanup()
-    })
+    // afterEach(async () => {
+    //     await conn.cleanup()
+    // })
 
     afterAll(async () => {
         await conn.disconnect()
@@ -40,20 +40,23 @@ describe('authenticate a user', () => {
         expect(response.body).toHaveProperty("article")
         expect(response.body.status).toBe(true)
         expect(response.body.message).toBe("Article creation successful")
+        _id = response.body.article._id
     })
 
-    // it('logged in users should be able to edit articles - PATCH request /api/blog/draft/id', async () => {
-    //     const response = await request(app).patch(`/api/blog/draft/${_id}`)
-    //     .set('content-type', 'application/json')
-    //     .set('Authorization', `Bearer ${token}`)
-    //     .send({body: "Closure is a function that can access it's outer variables"})
+    it('logged in users should be able to edit articles - PATCH request /api/blog/draft/id', async () => {
+        const response = await request(app).patch(`/api/blog/draft/${_id}`)
+        .set('content-type', 'application/json')
+        .set('Authorization', `Bearer ${token}`)
+        .send({body: "Positioning can seem daunting at first for everyone new to css. In this article I'll explain the concept in the simplest way possible"})
         
-    //     expect(response.status).toBe(200)
-    //     expect(response.body).toHaveProperty("status")
-    //     expect(response.body).toHaveProperty("article")
-    //     expect(response.body.status).toBe(true)
+        expect(response.status).toBe(200)
+        expect(response.body).toHaveProperty("status")
+        expect(response.body).toHaveProperty("article")
+        expect(response.body).toHaveProperty("message")
+        expect(response.body.status).toBe(true)
+        expect(response.body.message).toBe("Update successful")
 
-    // })
+    })
 
     // it('logged in users should be able to see all their drafts - GET request /api/blog/drafts', async () => {
     //     const response = await request(app).get(`/api/blog/drafts`)

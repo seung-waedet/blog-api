@@ -37,7 +37,22 @@ async function createArticle(req, res, next) {
     
 }
 
+async function updateArticle(req, res, next) {
+    const id = req.params.id
+    const infoToUpdate = req.body
+
+    try {
+        const update = await articleModel.findByIdAndUpdate(id, req.body, {new: true})
+        const response = {article: {...update._doc}, status: true, message: "Update successful"}
+        return res.status(200).json(response)
+    } catch(err) {
+        next(err)
+    }
+    
+}
+
 module.exports = {
     getAllArticles,
-    createArticle
+    createArticle,
+    updateArticle
 }
