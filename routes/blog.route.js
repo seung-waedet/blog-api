@@ -13,4 +13,6 @@ blogRoute.get('/drafts', passport.authenticate('jwt', {session: false}), blogCon
 
 blogRoute.get('/published', passport.authenticate('jwt', {session: false}), blogController.getPublished)
 
+blogRoute.patch('/publish/:id', passport.authenticate('jwt', {session: false}), blogController.updateDraftToPublished)
+
 module.exports = blogRoute

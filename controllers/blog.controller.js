@@ -2,7 +2,12 @@ const articleModel = require('../models/articleModel')
 const userModel = require('../models/userModel')
 
 async function getAllArticles(req, res, next) {
-
+    try {
+        const articles = await articleModel.find({})
+        return res.status(200).json(articles)
+    } catch(err) {
+        next(err)
+    }
 }
 
 async function createArticle(req, res, next) {
@@ -39,10 +44,11 @@ async function createArticle(req, res, next) {
 
 async function updateArticle(req, res, next) {
     const id = req.params.id
+    const authorId = req.user._id
     const infoToUpdate = req.body
 
     try {
-        const update = await articleModel.findByIdAndUpdate(id, req.body, {new: true})
+        const update = await articleModel.findByIdAndUpdate(id, {...infoToUpdate, authorId}, {new: true})
         const response = {article: {...update._doc}, status: true, message: "Update successful"}
         return res.status(200).json(response)
     } catch(err) {
@@ -76,10 +82,23 @@ async function getPublished(req, res, next) {
     }
 }
 
+async function updateDraftToPublished(req, res, next) {
+    const authorId = req.user._id
+    const id = req.params.id
+    try {
+        const update = await articleModel.findByIdAndUpdate(id, {authorId, state: "published"}, {new: true})
+        const response = {article: {...update._doc}, status: true, message: "Update successful - your article is now live"}
+        return res.status(200).json(response)
+    } catch(err) {
+        next(err)
+    }
+}
+
 module.exports = {
     getAllArticles,
     createArticle,
     updateArticle,
     getDrafts,
-    getPublished
+    getPublished,
+    updateDraftToPublished
 }

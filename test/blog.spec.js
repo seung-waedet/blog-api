@@ -82,27 +82,26 @@ describe('authenticate a user', () => {
     })
 
 
-    // it('logged in users should be able to update draft to publish - PATCH request /api/blog/publish/id', async () => {
-    //     const response = await request(app).patch(`/api/blog/publish/${_id}`)
-    //     .set('content-type', 'application/json')
-    //     .set('Authorization', `Bearer ${token}`)
+    it('logged in users should be able to update draft to publish - PATCH request /api/blog/publish/id', async () => {
+        const response = await request(app).patch(`/api/blog/publish/${_id}`)
+        .set('content-type', 'application/json')
+        .set('Authorization', `Bearer ${token}`)
         
-    //     expect(response.status).toBe(200)
-    //     expect(response.body).toHaveProperty("status")
-    //     expect(response.body).toHaveProperty("article")
-    //     expect(response.body.status).toBe(true)
-    //     expect(response.body.article.state).state("published")
-    // })
+        expect(response.status).toBe(200)
+        expect(response.body).toHaveProperty("status")
+        expect(response.body).toHaveProperty("article")
+        expect(response.body).toHaveProperty("message")
+        expect(response.body.status).toBe(true)
+        expect(response.body.article.state).toBe("published")
+        expect(response.body.message).toBe("Update successful - your article is now live")
+    })
 
-    // it('both logged and non-logged in users should be able to get all published articles - GET request /api/blog', async () => {
-    //     // await articleModel.create(articleModel[0])
-    //     // await articleModel.create(articleModel[1])
-
-    //     const response = await request(app).get('/api/blog')
-    //     .set('content-type', 'application/json')
+    it('both logged and non-logged in users should be able to get all published articles - GET request /api/blog', async () => {
+        const response = await request(app).get('/api/blog')
+        .set('content-type', 'application/json')
         
-    //     expect(response.status).toBe(200)
-    //     // expect(response.body.length).toBe(2)
-    // })
+        expect(response.status).toBe(200)
+        expect(response.body.length).toBe(1)
+    })
 
 })
