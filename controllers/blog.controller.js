@@ -47,12 +47,25 @@ async function updateArticle(req, res, next) {
         return res.status(200).json(response)
     } catch(err) {
         next(err)
+    }   
+}
+
+async function getDrafts(req, res, next) {
+    const authorId = req.user._id;
+
+    try {
+        const drafts = await articleModel.find({authorId})
+
+        const response = {articles: drafts, status: true}
+        return res.status(200).json(response)
+    } catch(err) {
+        next(err)
     }
-    
 }
 
 module.exports = {
     getAllArticles,
     createArticle,
-    updateArticle
+    updateArticle,
+    getDrafts
 }
