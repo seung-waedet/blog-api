@@ -1,9 +1,10 @@
+const { default: mongoose } = require('mongoose')
 const articleModel = require('../models/articleModel')
 const userModel = require('../models/userModel')
 
 async function getAllArticles(req, res, next) {
     try {
-        const articles = await articleModel.find({})
+        const articles = await articleModel.find({state: "published"})
         return res.status(200).json(articles)
     } catch(err) {
         next(err)
@@ -91,10 +92,50 @@ async function updateDraftToPublished(req, res, next) {
     }
 }
 
+async function getArticleByIdOrTitle(req, res, next) {
+    const idOrTitle = req.params.idOrTitle;
+    try {
+        let article = await articleModel.findOne({formattedTitle: idOrTitle})
+
+        //check state of article
+        if (article?.state == 'published') return res.status(200).json(article)
+        if (article?.state == 'draft') return res.status(404).json({message: "Aritlce hasn't been published", status: false})
+
+        article = await articleModel.findOne({_id: idOrTitle})
+
+        if (article?.state == 'published') return res.status(200).json(article)
+        if (article?.state == 'draft') return res.status(404).json({message: "Aritlce hasn't been published", status: false})
+
+        return res.status(404).json({message: "Aritlce doesn't exist", status: false})
+    } catch(err) {
+        next(err)
+    }
+}
+
+async function deleteArticle(req, res, next) {
+    const id = req.params.id
+    const authorId = req.user._id
+
+    try {
+        const deleteArticle = await articleModel.deleteOne({_id: id, authorId})
+        if (deleteArticle.deletedCount == 0) return res.status(404).json({status: false, message: "Article with such id doesn't exist"})
+
+        const response = {status: true, message: "Article successfully deleted"}
+        
+        return res.status(200).json(response)
+    } catch(err) {
+        if (err instanceof mongoose.Error.CastError) {
+            return res.status(400).json({status: false, message: "Invalid id"})
+        }
+        next(err)
+    }  
+}
 module.exports = {
     getAllArticles,
     createArticle,
     updateArticle,
     filterByDraftsOrPublished,
-    updateDraftToPublished
+    updateDraftToPublished,
+    getArticleByIdOrTitle,
+    deleteArticle
 }

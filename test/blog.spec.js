@@ -43,8 +43,8 @@ describe('authenticate a user', () => {
         _id = response.body.article._id
     })
 
-    it('logged in users should be able to edit articles - PATCH request /api/blog/draft/id', async () => {
-        const response = await request(app).patch(`/api/blog/draft/${_id}`)
+    it('logged in users should be able to edit articles - PATCH request /api/blog/article/id', async () => {
+        const response = await request(app).patch(`/api/blog/article/${_id}`)
         .set('content-type', 'application/json')
         .set('Authorization', `Bearer ${token}`)
         .send({body: "Positioning can seem daunting at first for everyone new to css. In this article I'll explain the concept in the simplest way possible"})
@@ -57,6 +57,7 @@ describe('authenticate a user', () => {
         expect(response.body.message).toBe("Update successful")
 
     })
+
 
     it('logged in users should be able to see all their drafts - GET request /api/blog/:state', async () => {
         const response = await request(app).get(`/api/blog/drafts`)
@@ -81,6 +82,16 @@ describe('authenticate a user', () => {
         expect(response.body.articles).toEqual([])
     })
 
+    it(`return an error if article with such title hasn't been published - GET request /api/blog/article/:idOrTitle`, async () => {
+        const title = "understanding-css-positioning"
+        const response = await request(app).get(`/api/blog/article/${title}`)
+        .set('content-type', 'application/json')
+        
+        expect(response.status).toBe(404)
+        expect(response.body.message).toBe(`Aritlce hasn't been published`)
+        expect(response.body.status).toBe(false)
+    })
+
 
     it('logged in users should be able to update draft to publish - PATCH request /api/blog/publish/:id', async () => {
         const response = await request(app).patch(`/api/blog/publish/${_id}`)
@@ -103,5 +114,32 @@ describe('authenticate a user', () => {
         expect(response.status).toBe(200)
         expect(response.body.length).toBe(1)
     })
+
+    it('both logged and non-logged in users should be able to get a published article by id - GET request /api/blog/article/:idOrTitle', async () => {
+        const response = await request(app).get(`/api/blog/article/${_id}`)
+        .set('content-type', 'application/json')
+        
+        expect(response.status).toBe(200)
+
+    })
+
+    it('both logged and non-logged in users should be able to get a published article by title - GET request /api/blog/article/:idOrTitle', async () => {
+        const title = "understanding-css-positioning"
+        const response = await request(app).get(`/api/blog/article/${title}`)
+        .set('content-type', 'application/json')
+        
+        expect(response.status).toBe(200)
+    })
+
+    it('logged in users should be able to delete an article by id - DELETE request /api/blog/article/id', async () => {
+        const response = await request(app).delete(`/api/blog/article/${_id}`)
+        .set('content-type', 'application/json')
+        .set('Authorization', `Bearer ${token}`)
+        
+        expect(response.status).toBe(200)
+        expect(response.body).toEqual({message: "Article successfully deleted", status: true})
+
+    })
+    
 
 })
