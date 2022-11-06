@@ -102,12 +102,20 @@ async function getArticleByIdOrTitle(req, res, next) {
         let article = await articleModel.findOne({formattedTitle: idOrTitle})
 
         //check state of article
-        if (article?.state == 'published') return res.status(200).json(article)
+        if (article?.state == 'published') {
+            article.read_count++
+            await article.save()
+            return res.status(200).json(article)
+        }
         if (article?.state == 'draft') return res.status(404).json({message: "Aritlce hasn't been published", status: false})
 
         article = await articleModel.findOne({_id: idOrTitle})
 
-        if (article?.state == 'published') return res.status(200).json(article)
+        if (article?.state == 'published') {
+            article.read_count++
+            await article.save()
+            return res.status(200).json(article)
+        }
         if (article?.state == 'draft') return res.status(404).json({message: "Aritlce hasn't been published", status: false})
 
         return res.status(404).json({message: "Aritlce doesn't exist", status: false})

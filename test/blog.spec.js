@@ -121,7 +121,6 @@ describe('authenticate a user', () => {
         .set('content-type', 'application/json')
         
         expect(response.status).toBe(200)
-
     })
 
     it('both logged and non-logged in users should be able to get a published article by title - GET request /api/blog/article/:idOrTitle', async () => {
