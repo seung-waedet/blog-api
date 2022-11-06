@@ -105,6 +105,7 @@ describe('authenticate a user', () => {
         expect(response.body.status).toBe(true)
         expect(response.body.article.state).toBe("published")
         expect(response.body.message).toBe("Update successful - your article is now live")
+        console.log(response.body)
     })
 
     it('both logged and non-logged in users should be able to get all published articles - GET request /api/blog', async () => {

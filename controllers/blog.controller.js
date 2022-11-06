@@ -83,8 +83,9 @@ async function updateDraftToPublished(req, res, next) {
         if (article.state == 'published') return res.status(200).json({article: article, message: "Article has already been published"})
 
         article.state = 'published'
+        article.timestamp = new Date()
         await article.save()
-    
+        
         const response = {article: {...article._doc}, status: true, message: "Update successful - your article is now live"}
         return res.status(200).json(response)
     } catch(err) {
