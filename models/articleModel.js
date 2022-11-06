@@ -54,6 +54,7 @@ const articleSchema = new Schema({
 articleSchema.set('toJSON', {
     transform: (document, returnedObject) => {
         delete returnedObject.__v
+        
     }
 })
 

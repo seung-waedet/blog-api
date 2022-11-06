@@ -67,7 +67,7 @@ userSchema.set('toJSON', {
     transform: (document, returnedObject) => {
       delete returnedObject.__v
       // the passwordHash should not be revealed
-      delete returnedObject.passwordHash
+      delete returnedObject.password
     }
 })
 

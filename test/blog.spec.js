@@ -41,6 +41,8 @@ describe('authenticate a user', () => {
         expect(response.body.status).toBe(true)
         expect(response.body.message).toBe("Article creation successful")
         _id = response.body.article._id
+
+        console.log(response.body)
     })
 
     it('logged in users should be able to edit articles - PATCH request /api/blog/article/id', async () => {
