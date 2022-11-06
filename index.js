@@ -8,7 +8,7 @@ const os = require('os')
 const PORT = process.env.PORT || 3000
 
 //CONNECT TO MONGOOSE
-// db.connectToDb()
+db.connectToDb()
 
 //Signup and login authentication middleware
 require('./authentication/auth')
