@@ -82,7 +82,7 @@ describe('authenticate a user', () => {
     })
 
 
-    it('logged in users should be able to update draft to publish - PATCH request /api/blog/publish/id', async () => {
+    it('logged in users should be able to update draft to publish - PATCH request /api/blog/publish/:id', async () => {
         const response = await request(app).patch(`/api/blog/publish/${_id}`)
         .set('content-type', 'application/json')
         .set('Authorization', `Bearer ${token}`)

@@ -75,10 +75,16 @@ async function filterByDraftsOrPublished(req, res, next) {
 
 async function updateDraftToPublished(req, res, next) {
     const authorId = req.user._id
-    const id = req.params.id
+    const _id = req.params.id
+
     try {
-        const update = await articleModel.findByIdAndUpdate(id, {authorId, state: "published"}, {new: true})
-        const response = {article: {...update._doc}, status: true, message: "Update successful - your article is now live"}
+        const article = await articleModel.findOne({_id, authorId})
+        if (article.state == 'published') return res.status(200).json({article: article, message: "Article has already been published"})
+
+        article.state = 'published'
+        await article.save()
+    
+        const response = {article: {...article._doc}, status: true, message: "Update successful - your article is now live"}
         return res.status(200).json(response)
     } catch(err) {
         next(err)
