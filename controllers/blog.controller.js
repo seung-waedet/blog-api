@@ -5,8 +5,7 @@ const userModel = require('../models/userModel')
 async function getAllArticles(req, res, next) {
     try {
         const { query } = req;
-
-        const { 
+        let { 
             author, 
             title, 
             tags,
@@ -27,6 +26,7 @@ async function getAllArticles(req, res, next) {
         }
 
         if (tags) {
+            tags = tags.split(',')
             findQuery.tags = { $in: tags }
         }
 
@@ -80,7 +80,7 @@ async function createArticle(req, res, next) {
             ...req.body,
             author: `${user.last_name} ${user.first_name}`,
             formattedTitle: formattedTitle,
-            authorId: req.user._id
+            authorInfo: req.user._id
         })
         
         const response = {article: {...article._doc}, status: true, message: "Article creation successful"}
@@ -93,11 +93,12 @@ async function createArticle(req, res, next) {
 
 async function updateArticle(req, res, next) {
     const id = req.params.id
-    const authorId = req.user._id
+    const authorInfo = req.user._id
     const infoToUpdate = req.body
 
     try {
-        const update = await articleModel.findByIdAndUpdate(id, {...infoToUpdate, authorId}, {new: true})
+        infoToUpdate.updated_at = new Date()
+        const update = await articleModel.findByIdAndUpdate(id, {...infoToUpdate, authorInfo}, {new: true})
         const response = {article: {...update._doc}, status: true, message: "Update successful"}
         return res.status(200).json(response)
     } catch(err) {
@@ -106,7 +107,7 @@ async function updateArticle(req, res, next) {
 }
 
 async function filterByDraftsOrPublished(req, res, next) {
-    const authorId = req.user._id;
+    const authorInfo = req.user._id;
     let state = req.params.state
 
     let { skip = 0, per_page = 5} = req.query
@@ -114,7 +115,7 @@ async function filterByDraftsOrPublished(req, res, next) {
     if (state == "drafts") state = "draft"
 
     try {
-        const filter = await articleModel.find({authorId, state: state}).skip(skip).limit(per_page)
+        const filter = await articleModel.find({authorInfo, state: state}).skip(skip).limit(per_page)
 
         const response = {articles: filter, status: true}
         return res.status(200).json(response)
@@ -125,18 +126,18 @@ async function filterByDraftsOrPublished(req, res, next) {
 
 
 async function updateDraftToPublished(req, res, next) {
-    const authorId = req.user._id
+    const authorInfo = req.user._id
     const _id = req.params.id
 
     try {
-        const article = await articleModel.findOne({_id, authorId})
+        const article = await articleModel.findOne({_id, authorInfo})
         if (article.state == 'published') return res.status(200).json({article: article, message: "Article has already been published"})
 
         article.state = 'published'
         article.timestamp = new Date()
 
         let reading_time = Math.round(article.body.split(" ").length / 200)
-        article.reading_time = `${reading_time || 1} min read`
+        article.reading_time = reading_time || 1
         await article.save()
         
         const response = {article: {...article._doc}, status: true, message: "Update successful - your article is now live"}
@@ -149,7 +150,7 @@ async function updateDraftToPublished(req, res, next) {
 async function getArticleByIdOrTitle(req, res, next) {
     const idOrTitle = req.params.idOrTitle;
     try {
-        let article = await articleModel.findOne({formattedTitle: idOrTitle}).populate('authorId', {first_name: 1, last_name: 1, email: 1})
+        let article = await articleModel.findOne({formattedTitle: idOrTitle}).populate('authorInfo', {first_name: 1, last_name: 1, email: 1})
 
         //check state of article
         if (article?.state == 'published') {
@@ -159,7 +160,7 @@ async function getArticleByIdOrTitle(req, res, next) {
         }
         if (article?.state == 'draft') return res.status(404).json({message: "Aritlce hasn't been published", status: false})
 
-        article = await articleModel.findOne({_id: idOrTitle}).populate('authorId', {first_name: 1, last_name: 1, email: 1})
+        article = await articleModel.findOne({_id: idOrTitle}).populate('authorInfo', {first_name: 1, last_name: 1, email: 1})
 
         if (article?.state == 'published') {
             article.read_count++
@@ -170,17 +171,16 @@ async function getArticleByIdOrTitle(req, res, next) {
 
         return res.status(404).json({message: "Aritlce doesn't exist", status: false})
     } catch(err) {
-        console.log(err)
         next(err)
     }
 }
 
 async function deleteArticle(req, res, next) {
     const id = req.params.id
-    const authorId = req.user._id
+    const authorInfo = req.user._id
 
     try {
-        const deleteArticle = await articleModel.deleteOne({_id: id, authorId})
+        const deleteArticle = await articleModel.deleteOne({_id: id, authorInfo})
         if (deleteArticle.deletedCount == 0) return res.status(404).json({status: false, message: "Article with such id doesn't exist"})
 
         const response = {status: true, message: "Article successfully deleted"}

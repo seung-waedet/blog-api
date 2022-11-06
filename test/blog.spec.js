@@ -8,7 +8,7 @@ const users = require('../fixtures/users.json')
 
 
 describe('authenticate a user', () => {
-    let conn, token, _id;
+    let conn, token, _id1, id2;
 
     beforeAll(async () => {
         conn = await connect()
@@ -26,7 +26,7 @@ describe('authenticate a user', () => {
         await conn.disconnect()
     })
 
-    it('logged in users should be able to create articles - POST request /api/blog/create-article', async () => {
+    it('logged in users(owner) should be able to create articles - POST request /api/blog/create-article', async () => {
         const response = await request(app).post('/api/blog/create-article')
         .set('Authorization', `Bearer ${token}`)
         .send(articles[0])
@@ -36,11 +36,24 @@ describe('authenticate a user', () => {
         expect(response.body).toHaveProperty("article")
         expect(response.body.status).toBe(true)
         expect(response.body.message).toBe("Article creation successful")
-        _id = response.body.article._id
+        _id1 = response.body.article._id
     })
 
-    it('logged in users should be able to edit articles - PATCH request /api/blog/article/id', async () => {
-        const response = await request(app).patch(`/api/blog/article/${_id}`)
+    it('logged in users(owner) should be able to create articles - POST request /api/blog/create-article', async () => {
+        const response = await request(app).post('/api/blog/create-article')
+        .set('Authorization', `Bearer ${token}`)
+        .send(articles[1])
+        expect(response.status).toBe(201)
+        expect(response.body).toHaveProperty("status")
+        expect(response.body).toHaveProperty("message")
+        expect(response.body).toHaveProperty("article")
+        expect(response.body.status).toBe(true)
+        expect(response.body.message).toBe("Article creation successful")
+        _id2 = response.body.article._id
+    })
+
+    it('logged in users(owner) should be able to edit articles - PATCH request /api/blog/article/id', async () => {
+        const response = await request(app).patch(`/api/blog/article/${_id1}`)
         .set('content-type', 'application/json')
         .set('Authorization', `Bearer ${token}`)
         .send({body: "Positioning can seem daunting at first for everyone new to css. In this article I'll explain the concept in the simplest way possible"})
@@ -51,11 +64,10 @@ describe('authenticate a user', () => {
         expect(response.body).toHaveProperty("message")
         expect(response.body.status).toBe(true)
         expect(response.body.message).toBe("Update successful")
-
     })
 
 
-    it('logged in users should be able to see all their drafts - GET request /api/blog/:state', async () => {
+    it('logged in users(owner) should be able to see all their drafts - GET request /api/blog/:state', async () => {
         const response = await request(app).get(`/api/blog/drafts`)
         .set('content-type', 'application/json')
         .set('Authorization', `Bearer ${token}`)
@@ -63,10 +75,11 @@ describe('authenticate a user', () => {
         expect(response.status).toBe(200)
         expect(response.body).toHaveProperty("status")
         expect(response.body).toHaveProperty("articles")
+        expect(response.body.articles.length).toBe(2)
         expect(response.body.status).toBe(true)
     })
 
-    it('logged in users should be able to see all their published articles - GET request /api/blog/:state', async () => {
+    it('logged in users(owner) should be able to see all their published articles - GET request /api/blog/:state', async () => {
         const response = await request(app).get(`/api/blog/published`)
         .set('content-type', 'application/json')
         .set('Authorization', `Bearer ${token}`)
@@ -89,8 +102,22 @@ describe('authenticate a user', () => {
     })
 
 
-    it('logged in users should be able to update draft to publish - PATCH request /api/blog/publish/:id', async () => {
-        const response = await request(app).patch(`/api/blog/publish/${_id}`)
+    it('logged in users(owner) should be able to update draft to publish - PATCH request /api/blog/publish/:id', async () => {
+        const response = await request(app).patch(`/api/blog/publish/${_id1}`)
+        .set('content-type', 'application/json')
+        .set('Authorization', `Bearer ${token}`)
+        
+        expect(response.status).toBe(200)
+        expect(response.body).toHaveProperty("status")
+        expect(response.body).toHaveProperty("article")
+        expect(response.body).toHaveProperty("message")
+        expect(response.body.status).toBe(true)
+        expect(response.body.article.state).toBe("published")
+        expect(response.body.message).toBe("Update successful - your article is now live")
+    })
+
+    it('logged in users(owner) should be able to update draft to publish - PATCH request /api/blog/publish/:id', async () => {
+        const response = await request(app).patch(`/api/blog/publish/${_id2}`)
         .set('content-type', 'application/json')
         .set('Authorization', `Bearer ${token}`)
         
@@ -104,15 +131,17 @@ describe('authenticate a user', () => {
     })
 
     it('both logged and non-logged in users should be able to get all published articles - GET request /api/blog', async () => {
-        const response = await request(app).get('/api/blog')
+        let tags = "newbies"
+        const response = await request(app).get(`/api/blog`)
         .set('content-type', 'application/json')
         
         expect(response.status).toBe(200)
-        expect(response.body.length).toBe(1)
+        expect(response.body.length).toBe(2)
     })
 
+
     it('both logged and non-logged in users should be able to get a published article by id - GET request /api/blog/article/:idOrTitle', async () => {
-        const response = await request(app).get(`/api/blog/article/${_id}`)
+        const response = await request(app).get(`/api/blog/article/${_id1}`)
         .set('content-type', 'application/json')
         
         expect(response.status).toBe(200)
@@ -126,8 +155,26 @@ describe('authenticate a user', () => {
         expect(response.status).toBe(200)
     })
 
-    it('logged in users should be able to delete an article by id - DELETE request /api/blog/article/id', async () => {
-        const response = await request(app).delete(`/api/blog/article/${_id}`)
+    it('both logged and non-logged in users should be able to search published articles by tags - GET request /api/blog', async () => {
+        let tags = "newbies,css"
+        const response = await request(app).get(`/api/blog?tags=${tags}`)
+        .set('content-type', 'application/json')
+        
+        expect(response.status).toBe(200)
+        expect(response.body.length).toBe(1)
+    })
+
+    it('both logged and non-logged in users should be able to order published articles by read_count - GET request /api/blog', async () => {
+        let order_by = "read_count"
+        const response = await request(app).get(`/api/blog?order_by=${order_by}&order=desc`)
+        .set('content-type', 'application/json')
+        
+        expect(response.status).toBe(200)
+        expect(response.body[0].title).toBe("Understanding CSS Positioning")
+    })
+
+    it('logged in users(owner) should be able to delete an article by id - DELETE request /api/blog/article/id', async () => {
+        const response = await request(app).delete(`/api/blog/article/${_id1}`)
         .set('content-type', 'application/json')
         .set('Authorization', `Bearer ${token}`)
         
@@ -135,6 +182,4 @@ describe('authenticate a user', () => {
         expect(response.body).toEqual({message: "Article successfully deleted", status: true})
 
     })
-    
-
 })

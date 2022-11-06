@@ -31,7 +31,7 @@ const articleSchema = new Schema({
         default: 0
     },
     reading_time: {
-        type: String
+        type: Number
     },
     body: {
         type: String,
@@ -45,16 +45,9 @@ const articleSchema = new Schema({
         type: Date,
         default: Date
     },
-    authorId: {
+    authorInfo: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
-    }
-})
-
-articleSchema.set('toJSON', {
-    transform: (document, returnedObject) => {
-        delete returnedObject.__v
-        
     }
 })
 
