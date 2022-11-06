@@ -109,10 +109,12 @@ async function filterByDraftsOrPublished(req, res, next) {
     const authorId = req.user._id;
     let state = req.params.state
 
+    let { skip = 0, per_page = 5} = req.query
+
     if (state == "drafts") state = "draft"
 
     try {
-        const filter = await articleModel.find({authorId, state: state})
+        const filter = await articleModel.find({authorId, state: state}).skip(skip).limit(per_page)
 
         const response = {articles: filter, status: true}
         return res.status(200).json(response)
@@ -147,7 +149,7 @@ async function updateDraftToPublished(req, res, next) {
 async function getArticleByIdOrTitle(req, res, next) {
     const idOrTitle = req.params.idOrTitle;
     try {
-        let article = await articleModel.findOne({formattedTitle: idOrTitle})
+        let article = await articleModel.findOne({formattedTitle: idOrTitle}).populate('authorId', {first_name: 1, last_name: 1, email: 1})
 
         //check state of article
         if (article?.state == 'published') {
@@ -157,7 +159,7 @@ async function getArticleByIdOrTitle(req, res, next) {
         }
         if (article?.state == 'draft') return res.status(404).json({message: "Aritlce hasn't been published", status: false})
 
-        article = await articleModel.findOne({_id: idOrTitle})
+        article = await articleModel.findOne({_id: idOrTitle}).populate('authorId', {first_name: 1, last_name: 1, email: 1})
 
         if (article?.state == 'published') {
             article.read_count++
@@ -168,6 +170,7 @@ async function getArticleByIdOrTitle(req, res, next) {
 
         return res.status(404).json({message: "Aritlce doesn't exist", status: false})
     } catch(err) {
+        console.log(err)
         next(err)
     }
 }
