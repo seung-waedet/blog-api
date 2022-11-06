@@ -5,7 +5,7 @@ const passport = require('passport')
 const userRoute = require('./routes/user.route')
 const blogRoute = require('./routes/blog.route')
 const os = require('os')
-const PORT = 8000
+const PORT = process.env.PORT || 3000
 
 //CONNECT TO MONGOOSE
 // db.connectToDb()
@@ -45,8 +45,8 @@ app.use('*', (req, res) => {
     res.status(404).json({status: false, message: `Route not found`})
 })
 
-// app.listen(PORT, () => {
-//     console.log(`Server is running at PORT http://localhost:${PORT}`)
-// })
+app.listen(PORT, () => {
+    console.log(`Server is running at PORT http://localhost:${PORT}`)
+})
 
 module.exports = app
