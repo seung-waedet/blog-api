@@ -8,7 +8,10 @@ const os = require('os')
 const PORT = process.env.PORT || 3000
 
 //CONNECT TO MONGOOSE
-db.connectToDb()
+if (process.env.NODE_ENV != "test") {
+    db.connectToDb()
+}
+
 
 //Signup and login authentication middleware
 require('./authentication/auth')
@@ -45,8 +48,10 @@ app.use('*', (req, res) => {
     res.status(404).json({status: false, message: `Route not found`})
 })
 
-app.listen(PORT, () => {
-    console.log(`Server is running at PORT http://localhost:${PORT}`)
-})
+if (process.env.NODE_ENV != "test") {
+    app.listen(PORT, () => {
+        console.log(`Server is running at PORT http://localhost:${PORT}`)
+    })
+}
 
 module.exports = app
