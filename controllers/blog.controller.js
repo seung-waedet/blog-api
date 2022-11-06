@@ -84,6 +84,9 @@ async function updateDraftToPublished(req, res, next) {
 
         article.state = 'published'
         article.timestamp = new Date()
+
+        let reading_time = Math.round(article.body.split(" ").length / 200)
+        article.reading_time = `${reading_time || 1} min read`
         await article.save()
         
         const response = {article: {...article._doc}, status: true, message: "Update successful - your article is now live"}
