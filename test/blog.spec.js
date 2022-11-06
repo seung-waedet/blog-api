@@ -58,7 +58,7 @@ describe('authenticate a user', () => {
 
     })
 
-    it('logged in users should be able to see all their drafts - GET request /api/blog/drafts', async () => {
+    it('logged in users should be able to see all their drafts - GET request /api/blog/:state', async () => {
         const response = await request(app).get(`/api/blog/drafts`)
         .set('content-type', 'application/json')
         .set('Authorization', `Bearer ${token}`)
@@ -69,7 +69,7 @@ describe('authenticate a user', () => {
         expect(response.body.status).toBe(true)
     })
 
-    it('logged in users should be able to see all their published articles - GET request /api/blog/published', async () => {
+    it('logged in users should be able to see all their published articles - GET request /api/blog/:state', async () => {
         const response = await request(app).get(`/api/blog/published`)
         .set('content-type', 'application/json')
         .set('Authorization', `Bearer ${token}`)

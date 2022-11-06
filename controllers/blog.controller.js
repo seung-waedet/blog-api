@@ -56,31 +56,22 @@ async function updateArticle(req, res, next) {
     }   
 }
 
-async function getDrafts(req, res, next) {
+async function filterByDraftsOrPublished(req, res, next) {
     const authorId = req.user._id;
+    let state = req.params.state
+
+    if (state == "drafts") state = "draft"
 
     try {
-        const drafts = await articleModel.find({authorId, state: "draft"})
+        const filter = await articleModel.find({authorId, state: state})
 
-        const response = {articles: drafts, status: true}
+        const response = {articles: filter, status: true}
         return res.status(200).json(response)
     } catch(err) {
         next(err)
     }
 }
 
-async function getPublished(req, res, next) {
-    const authorId = req.user._id;
-
-    try {
-        const published = await articleModel.find({authorId, state: "published"})
-
-        const response = {articles: published, status: true}
-        return res.status(200).json(response)
-    } catch(err) {
-        next(err)
-    }
-}
 
 async function updateDraftToPublished(req, res, next) {
     const authorId = req.user._id
@@ -98,7 +89,6 @@ module.exports = {
     getAllArticles,
     createArticle,
     updateArticle,
-    getDrafts,
-    getPublished,
+    filterByDraftsOrPublished,
     updateDraftToPublished
 }

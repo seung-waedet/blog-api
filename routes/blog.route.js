@@ -9,9 +9,7 @@ blogRoute.post('/create-article', passport.authenticate('jwt', {session: false})
 
 blogRoute.patch('/draft/:id', passport.authenticate('jwt', {session: false}), blogController.updateArticle)
 
-blogRoute.get('/drafts', passport.authenticate('jwt', {session: false}), blogController.getDrafts)
-
-blogRoute.get('/published', passport.authenticate('jwt', {session: false}), blogController.getPublished)
+blogRoute.get('/:state', passport.authenticate('jwt', {session: false}), blogController.filterByDraftsOrPublished)
 
 blogRoute.patch('/publish/:id', passport.authenticate('jwt', {session: false}), blogController.updateDraftToPublished)
 
