@@ -4,7 +4,55 @@ const userModel = require('../models/userModel')
 
 async function getAllArticles(req, res, next) {
     try {
-        const articles = await articleModel.find({state: "published"})
+        const { query } = req;
+
+        const { 
+            author, 
+            title, 
+            tags,
+            order = 'asc', 
+            order_by = 'timestamp', 
+            skip = 0, 
+            per_page = 20 
+        } = query;
+    
+        const findQuery = {};
+    
+        if (author) {
+            findQuery.author = author
+        } 
+    
+        if (title) {
+            findQuery.title = title
+        }
+
+        if (tags) {
+            findQuery.tags = { $in: tags }
+        }
+
+        findQuery.state = 'published'
+    
+        const sortQuery = {};
+    
+        const sortAttributes = order_by.split(',')
+    
+        for (const attribute of sortAttributes) {
+            if (order === 'asc' && order_by) {
+                sortQuery[attribute] = 1
+            }
+        
+            if (order === 'desc' && order_by) {
+                sortQuery[attribute] = -1
+            }
+        }
+    
+    
+        const articles = await articleModel
+        .find(findQuery)
+        .sort(sortQuery)
+        .skip(skip)
+        .limit(per_page)
+        
         return res.status(200).json(articles)
     } catch(err) {
         next(err)
