@@ -74,5 +74,4 @@ describe('authenticate a user', () => {
         expect(response.body).not.toHaveProperty('token')
         
     })
-
 })

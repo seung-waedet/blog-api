@@ -74,6 +74,7 @@ async function createArticle(req, res, next) {
     }
     if (formattedTitle.slice(-1) == "-") formattedTitle = formattedTitle.slice(0, -1)
 
+    if (process.env.NODE_ENV != 'test') req.body.tags = req.body.tags.split(",")
     try {
         const user = await userModel.findById(req.user._id);
         const article = await articleModel.create({
@@ -186,6 +187,7 @@ async function deleteArticle(req, res, next) {
         const response = {status: true, message: "Article successfully deleted"}
         
         return res.status(200).json(response)
+
     } catch(err) {
         if (err instanceof mongoose.Error.CastError) {
             return res.status(400).json({status: false, message: "Invalid id"})
