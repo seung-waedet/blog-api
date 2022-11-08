@@ -66,9 +66,8 @@ describe('authenticate a user', () => {
         expect(response.body.message).toBe("Update successful")
     })
 
-
-    it('logged in users(owner) should be able to see all their drafts - GET request /api/blog/:state', async () => {
-        const response = await request(app).get(`/api/blog/drafts`)
+    it('logged in users(owner) should be able to get all articles in all states - GET request /api/blog/articles', async () => {
+        const response = await request(app).get(`/api/blog/articles`)
         .set('content-type', 'application/json')
         .set('Authorization', `Bearer ${token}`)
         
@@ -79,8 +78,20 @@ describe('authenticate a user', () => {
         expect(response.body.status).toBe(true)
     })
 
-    it('logged in users(owner) should be able to see all their published articles - GET request /api/blog/:state', async () => {
-        const response = await request(app).get(`/api/blog/published`)
+    it('logged in users(owner) should be able to filter articles by draft state - GET request /api/blog/articles', async () => {
+        const response = await request(app).get(`/api/blog/articles?state=draft`)
+        .set('content-type', 'application/json')
+        .set('Authorization', `Bearer ${token}`)
+        
+        expect(response.status).toBe(200)
+        expect(response.body).toHaveProperty("status")
+        expect(response.body).toHaveProperty("articles")
+        expect(response.body.articles.length).toBe(2)
+        expect(response.body.status).toBe(true)
+    })
+
+    it('logged in users(owner) should be able to filter articles by published state - GET request /api/blog/articles', async () => {
+        const response = await request(app).get(`/api/blog/articles?state=published`)
         .set('content-type', 'application/json')
         .set('Authorization', `Bearer ${token}`)
         

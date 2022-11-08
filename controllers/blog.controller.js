@@ -1,6 +1,6 @@
-const { default: mongoose } = require('mongoose')
 const articleModel = require('../models/articleModel')
 const userModel = require('../models/userModel')
+const { calculateReadingTime, errorHandler } = require('../utils')
 
 async function getAllArticles(req, res, next) {
     try {
@@ -55,7 +55,7 @@ async function getAllArticles(req, res, next) {
         
         return res.status(200).json(articles)
     } catch(err) {
-        next(err)
+        errorHandler(req, res, err)
     }
 }
 
@@ -83,11 +83,14 @@ async function createArticle(req, res, next) {
             formattedTitle: formattedTitle,
             authorInfo: req.user._id
         })
-        
+
+        article.reading_time = calculateReadingTime(article.body)
+        article.save()
+
         const response = {article: {...article._doc}, status: true, message: "Article creation successful"}
         return res.status(201).json(response)
     } catch(err) {
-        next(err)
+        errorHandler(req, res, err)
     }
     
 }
@@ -97,31 +100,40 @@ async function updateArticle(req, res, next) {
     const authorInfo = req.user._id
     const infoToUpdate = req.body
 
+    const { body } = infoToUpdate
+    if (body) {
+        infoToUpdate.reading_time = calculateReadingTime(body)
+    }
     try {
         infoToUpdate.updated_at = new Date()
         const update = await articleModel.findByIdAndUpdate(id, {...infoToUpdate, authorInfo}, {new: true})
+        
+        if (!update) {
+            let err = new Error("An article with such id doesn't exist")
+            err.status = 404
+            next(err)
+        }
         const response = {article: {...update._doc}, status: true, message: "Update successful"}
         return res.status(200).json(response)
     } catch(err) {
-        next(err)
+        errorHandler(req, res, err)
     }   
 }
 
-async function filterByDraftsOrPublished(req, res, next) {
+async function getDraftsAndPublished(req, res, next) {
     const authorInfo = req.user._id;
-    let state = req.params.state
-
-    let { skip = 0, per_page = 5} = req.query
-
-    if (state == "drafts") state = "draft"
+    let { state, skip = 0, per_page = 10 } = req.query
 
     try {
-        const filter = await articleModel.find({authorInfo, state: state}).skip(skip).limit(per_page)
+        let filter;
+        if (state) {
+            filter = await articleModel.find({authorInfo, state: state}).skip(skip).limit(per_page)
+        } else filter = await articleModel.find({authorInfo}).skip(skip).limit(per_page)
 
         const response = {articles: filter, status: true}
         return res.status(200).json(response)
     } catch(err) {
-        next(err)
+        errorHandler(req, res, err)
     }
 }
 
@@ -134,17 +146,22 @@ async function updateDraftToPublished(req, res, next) {
         const article = await articleModel.findOne({_id, authorInfo})
         if (article.state == 'published') return res.status(200).json({article: article, message: "Article has already been published"})
 
+        if (!article) {
+            let err = new Error("An article with such id doesn't exist")
+            err.status = 404
+            next(err)
+        }
+
         article.state = 'published'
         article.timestamp = new Date()
 
-        let reading_time = Math.round(article.body.split(" ").length / 200)
-        article.reading_time = reading_time || 1
-        await article.save()
+        article.reading_time = calculateReadingTime(article.body)
+        await article.save() 
         
         const response = {article: {...article._doc}, status: true, message: "Update successful - your article is now live"}
         return res.status(200).json(response)
     } catch(err) {
-        next(err)
+       errorHandler(req, res, err)
     }
 }
 
@@ -172,7 +189,7 @@ async function getArticleByIdOrTitle(req, res, next) {
 
         return res.status(404).json({message: "Aritlce doesn't exist", status: false})
     } catch(err) {
-        next(err)
+        errorHandler(req, res, err)
     }
 }
 
@@ -189,17 +206,14 @@ async function deleteArticle(req, res, next) {
         return res.status(200).json(response)
 
     } catch(err) {
-        if (err instanceof mongoose.Error.CastError) {
-            return res.status(400).json({status: false, message: "Invalid id"})
-        }
-        next(err)
+        errorHandler(req, res, err)
     }  
 }
 module.exports = {
     getAllArticles,
     createArticle,
     updateArticle,
-    filterByDraftsOrPublished,
+    getDraftsAndPublished,
     updateDraftToPublished,
     getArticleByIdOrTitle,
     deleteArticle

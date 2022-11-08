@@ -355,25 +355,26 @@ npm run test
 
 ---
 
-### Get all created blogs by authenticated user - filterable by drafts and published
+### Get all created articles by authenticated users
 
-- Route: /api/blog/:state
+- Route: /api/blog/articles
 - Method: GET
 - Header
   - Authorization: Bearer {token}
 - Query params:
 
-  - per_page (default: 5)
+  - per_page (default: 10)
   - skip (default: 0)
 
+  - filterable by state
 
     - state
     ```text
-    /api/blog/drafts
+    /api/blog/articles?state=draft
     ```
 
     ```text
-    /api/blog/published
+    /api/blog/articles?state=published
     ```
 
    

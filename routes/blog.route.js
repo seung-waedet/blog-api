@@ -7,7 +7,7 @@ blogRoute.get("/", blogController.getAllArticles)
 
 blogRoute.get("/article/:idOrTitle", blogController.getArticleByIdOrTitle)
 
-blogRoute.get('/:state', passport.authenticate('jwt', {session: false}), blogController.filterByDraftsOrPublished)
+blogRoute.get('/articles', passport.authenticate('jwt', {session: false}), blogController.getDraftsAndPublished)
 
 blogRoute.post('/create-article', passport.authenticate('jwt', {session: false}), blogController.createArticle)
 
