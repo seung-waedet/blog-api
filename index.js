@@ -32,7 +32,7 @@ app.use("/api", userRoute);
 app.use("/api/blog", blogRoute);
 
 app.get("/", (req, res) => {
-  res.status(200).json({ status: true, message: `Welcome to Annies Blog API` });
+  res.status(200).json({ status: true, message: `Blog API` });
 });
 
 //Error Middleware function
